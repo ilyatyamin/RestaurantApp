@@ -21,7 +21,7 @@ class Menu(private var dishList: MutableMap<Dish, Int> = mutableMapOf()) {
                 return false
             } else if (dishList[checker]!! < element.value) {
                 Logger.writeToLogResult(
-                    "There is not enough quantity of dish with name ${element.key}",
+                    "There is not enough quantity of dish with name ${element.key}. need ${element.value}, have ${dishList[checker]!!}",
                     Logger.Status.ERROR
                 )
                 return false
@@ -45,10 +45,17 @@ class Menu(private var dishList: MutableMap<Dish, Int> = mutableMapOf()) {
         return true
     }
 
-    fun addDishToMenu(name : String, price : Int, timeProduction : Duration, amount: Int) {
-        val dish = Dish(getDishId, name, price, timeProduction)
-        Logger.writeToLogResult("New dish with NAME=${dish.name} and AMOUNT=$amount added to menu", Logger.Status.OK)
-        dishList[dish] = amount
+    fun addDishToMenu(name : String, price : Int, timeProduction : Duration, amount: Int) : Int {
+        val id = getDishId
+        return if (dishList.keys.none { it.name == name }) {
+            val dish = Dish(id, name, price, timeProduction)
+            Logger.writeToLogResult("New dish with NAME=${dish.name} and AMOUNT=$amount added to menu", Logger.Status.OK)
+            dishList[dish] = amount
+            id
+        } else {
+            Logger.writeToLogResult("Dish with this name ($name) already exists.", Logger.Status.ERROR)
+            dishList.keys.firstOrNull { it.name == name }!!.dishId
+        }
     }
 
     fun removeDishFromMenu(dishId: Int) {
@@ -65,7 +72,7 @@ class Menu(private var dishList: MutableMap<Dish, Int> = mutableMapOf()) {
         return dishList.filter { it.key.dishId == dish }.isNotEmpty()
     }
 
-    private fun getDishById(dish: Int): Dish? {
+    fun getDishById(dish: Int): Dish? {
         return dishList.filter { it.key.dishId == dish }.keys.firstOrNull()
     }
 
@@ -76,9 +83,9 @@ class Menu(private var dishList: MutableMap<Dish, Int> = mutableMapOf()) {
                 DishParams.Name -> {
                     if (type is String) {
                         Logger.writeToLogResult("Try to set parameter $params to $dishName...", Logger.Status.OK)
-                        dishList.remove(dish)
                         val copyValue = dishList[dish]
                         dish?.name = type
+                        dishList.remove(dish)
                         dishList[dish!!] = copyValue!!
                     } else {
                         Logger.writeToLogResult("Incorrect type of parameter", Logger.Status.ERROR)
@@ -88,9 +95,9 @@ class Menu(private var dishList: MutableMap<Dish, Int> = mutableMapOf()) {
                 DishParams.Price -> {
                     if (type is Int) {
                         Logger.writeToLogResult("Try to set parameter $params to $dishName...", Logger.Status.OK)
-                        dishList.remove(dish)
                         val copyValue = dishList[dish]
                         dish?.price = type
+                        dishList.remove(dish)
                         dishList[dish!!] = copyValue!!
                     } else {
                         Logger.writeToLogResult("Incorrect type of parameter", Logger.Status.ERROR)
@@ -100,9 +107,9 @@ class Menu(private var dishList: MutableMap<Dish, Int> = mutableMapOf()) {
                 DishParams.TimeProduction -> {
                     if (type is Duration) {
                         Logger.writeToLogResult("Try to set parameter $params to $dishName...", Logger.Status.OK)
-                        dishList.remove(dish)
                         val copyValue = dishList[dish]
                         dish?.timeProduction = type
+                        dishList.remove(dish)
                         dishList[dish!!] = copyValue!!
                     } else {
                         Logger.writeToLogResult("Incorrect type of parameter", Logger.Status.ERROR)
@@ -110,7 +117,7 @@ class Menu(private var dishList: MutableMap<Dish, Int> = mutableMapOf()) {
                 }
             }
         } else {
-            Logger.writeToLogResult("Dish doesn't contains in dish list of restaurant.", Logger.Status.ERROR)
+            Logger.writeToLogResult("Dish with id = $dishName doesn't contains in dish list of restaurant.", Logger.Status.ERROR)
         }
     }
 
@@ -138,6 +145,16 @@ class Menu(private var dishList: MutableMap<Dish, Int> = mutableMapOf()) {
             }
         }
         return result
+    }
+
+    fun increaseAmountOfDish(dishId: Int, delta : Int) {
+        val obj = getDishById(dishId)
+        if (obj == null) {
+            Logger.writeToLogResult("Trying to increase amount of dish with name = NULL in $delta", Logger.Status.ERROR)
+        } else {
+            dishList[obj] = dishList[obj]!! + delta
+            Logger.writeToLogResult("Trying to increase amount of dish with name = ${obj.name} in $delta", Logger.Status.OK)
+        }
     }
 
 }

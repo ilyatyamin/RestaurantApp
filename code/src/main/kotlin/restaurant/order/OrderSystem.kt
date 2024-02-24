@@ -1,7 +1,6 @@
 package restaurant.order
 
 import restaurant.Logger
-import restaurant.dish.Dish
 import restaurant.dish.Menu
 import java.util.PriorityQueue
 
@@ -32,7 +31,7 @@ class OrderSystem {
     }
 
     @JvmName("AddOrderIntToInt")
-    fun addOrder(list: MutableMap<Int, Int>, level: ImportanceLevel, userId: Int) : Int {
+    fun addOrder(list: MutableMap<Int, Int>, level: ImportanceLevel, userId: Int): Int {
         val idForThisOrder = getOrderId
         val order = Order(menuObj.getDishMapFromIds(list), level, menuObj, userId, idForThisOrder)
         allOrders.add(order)
@@ -41,7 +40,7 @@ class OrderSystem {
     }
 
     @JvmName("AddOrderStringToInt")
-    fun addOrder(list: MutableMap<String, Int>, level: ImportanceLevel, userId: Int) : Int {
+    fun addOrder(list: MutableMap<String, Int>, level: ImportanceLevel, userId: Int): Int {
         val idForThisOrder = getOrderId
         val order = Order(menuObj.getDishMapFromNames(list), level, menuObj, userId, idForThisOrder)
         allOrders.add(order)
@@ -49,45 +48,56 @@ class OrderSystem {
         return idForThisOrder
     }
 
-    fun addToExistedOrder(orderId: Int, dish: Dish, amount: Int = 1) {
-        Logger.writeToLog("Try to add 1 dish to existed order with id $orderId")
+    fun addToExistedOrder(orderId: Int, dishId: Int, amount: Int = 1) {
         val order = getOrderById(orderId)
         if (order == null) {
-            Logger.writeToLogResult("This order doesn't exists.", Logger.Status.ERROR)
+            Logger.writeToLogResult("This order #$orderId doesn't exists.", Logger.Status.ERROR)
         } else {
-            order.addDish(dish, amount)
+            val dish = menuObj.getDishById(dishId)
+            if (dish == null) {
+                Logger.writeToLogResult("Try to add to order $orderId unexisted dish $dishId", Logger.Status.OK)
+            } else {
+                order.addDish(dish, amount)
+            }
         }
     }
 
-    fun addToExistedOrder(orderId: Int, listOfDishes: MutableList<Dish>, amount: MutableList<Int> = mutableListOf()) {
-        Logger.writeToLog("Try to add 1 dish to existed order with id $orderId")
+    fun addToExistedOrder(orderId: Int, listOfDishes: MutableList<Int>, amount: MutableList<Int> = mutableListOf()) {
         val order = getOrderById(orderId)
         if (order == null) {
-            Logger.writeToLogResult("This order doesn't exists.", Logger.Status.ERROR)
+            Logger.writeToLogResult("This order #$orderId doesn't exists.", Logger.Status.ERROR)
         } else {
-            for (i in 0..listOfDishes.size) {
-                if (listOfDishes.size != amount.size) {
-                    order.addDish(listOfDishes[i], 1)
+            for (i in 0 until listOfDishes.size) {
+                val dish = menuObj.getDishById(listOfDishes[i])
+                if (dish == null) {
+                    Logger.writeToLogResult(
+                        "Try to add to order $orderId unexisted dish ${listOfDishes[i]}",
+                        Logger.Status.ERROR
+                    )
                 } else {
-                    order.addDish(listOfDishes[i], amount[i])
+                    if (listOfDishes.size != amount.size) {
+                        order.addDish(dish, 1)
+                    } else {
+                        order.addDish(dish, amount[i])
+                    }
                 }
             }
         }
     }
 
-    fun cancelOrder(orderId : Int) {
+    fun cancelOrder(orderId: Int) {
         val order = getOrderById(orderId)
         if (order == null) {
-            Logger.writeToLogResult("Order doesn't exists (you cannot cancel order that doesn't exists)", Logger.Status.ERROR)
+            Logger.writeToLogResult("Try to cancel order. Order #$orderId doesn't exists.", Logger.Status.ERROR)
         } else {
             order.cancelOrder()
         }
     }
 
-    fun getOrderStatus(orderId : Int) : OrderStatus? {
+    fun getOrderStatus(orderId: Int): OrderStatus? {
         val order = getOrderById(orderId)
         return if (order == null) {
-            Logger.writeToLogResult("Order doesn't exists (you cannot cancel order that doesn't exists)", Logger.Status.ERROR)
+            Logger.writeToLogResult("Try to get order status. Order #$orderId doesn't exists.", Logger.Status.ERROR)
             null
         } else {
             Logger.writeToLogResult("OrderStatus is ${order.getStatus()}", Logger.Status.OK)
@@ -95,21 +105,31 @@ class OrderSystem {
         }
     }
 
-    fun payOrder(orderId : Int) {
+    fun payOrder(orderId: Int) {
         val order = getOrderById(orderId)
         if (order != null) {
             order.payOrder()
         } else {
-            Logger.writeToLogResult("Order with this id doesn't exists", Logger.Status.ERROR)
+            Logger.writeToLogResult(
+                "Try to pay for order. Order #$orderId with this id doesn't exists",
+                Logger.Status.ERROR
+            )
         }
     }
 
-    fun setReviewToOrder(orderId : Int, stars : Int, comment : String) {
+    fun setReviewToOrder(orderId: Int, stars: Int, comment: String) {
         val order = getOrderById(orderId)
         if (order != null) {
             order.setReview(stars, comment)
         } else {
-            Logger.writeToLogResult("Order with this id doesn't exists", Logger.Status.ERROR)
+            Logger.writeToLogResult(
+                "Try to set review to order. Order with this id #$orderId doesn't exists",
+                Logger.Status.ERROR
+            )
         }
+    }
+
+    fun increaseTheNumber(orderId: Int, delta: Int) {
+        menuObj.increaseAmountOfDish(orderId, delta)
     }
 }
