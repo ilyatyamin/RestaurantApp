@@ -1,15 +1,23 @@
 package restaurant
 
+import restaurant.order.OrderSystem
 import restaurant.usersystem.AuthorizationSystem
 import restaurant.usersystem.User
 import restaurant.usersystem.UserRole
-import restaurant.usersystem.Visitor
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 class System {
+    init {
+        Logger.writeToLog("-".repeat(30))
+        Logger.writeToLog("System was created.")
+    }
+
+    private val orderSystem = OrderSystem()
+    private val authSystem = AuthorizationSystem(orderSystem)
+
     /** Объект, позволяющий шифровать сообщения и расшифровывать их */
     private object Encryptor {
         private var password = "ASDFGHEYVN47CB4F"
@@ -47,11 +55,6 @@ class System {
         }
     }
 
-    val currentOrders = mutableListOf<Order>()
-    var menu = Menu()
-    val authSystem = AuthorizationSystem()
-
-
     fun tryAuth(login : String, password : String) : User? {
         return authSystem.tryAuth(login, Encryptor.encryptThis(password))
     }
@@ -60,7 +63,7 @@ class System {
         return authSystem.addUserToSystem(login, Encryptor.encryptThis(password), role)
     }
 
-    fun exitUser(user : User) {
+    fun exitUser(user : User?) {
         return authSystem.exitFromSystem(user)
     }
 

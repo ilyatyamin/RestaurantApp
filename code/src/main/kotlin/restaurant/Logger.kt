@@ -1,23 +1,41 @@
 package restaurant
 
-import java.io.File
+import java.io.FileWriter
 import java.util.*
 
 object Logger {
-    private var pathName = "logs.log"
-    private var file = File(pathName)
+    enum class Status {
+        OK,
+        ERROR,
+        NEUTRAL
+    }
 
-    fun changePathName(path : String) {
+    private var pathName = "logs.log"
+    private var lock = Any()
+
+    fun changePathName(path: String) {
         pathName = path
     }
 
-    fun writeToLog(text : String) {
+    fun writeToLog(text: String) {
         try {
-            file.writeText("${Date()}. $text", Charsets.UTF_8)
-        } catch (ex : Exception) {
-            file = File(pathName)
-            file.writeText("There are an error in writing to file. ${ex.message}", Charsets.UTF_8)
-            file.writeText("${Date()}. $text", Charsets.UTF_8)
+            synchronized(lock) {
+                FileWriter(pathName, true).use {
+                    it.write("[${Date()}]. $text. \n")
+                }
+            }
+        } catch (_: Exception) {
+        }
+    }
+
+    fun writeToLogResult(text: String, status : Status) {
+        try {
+            synchronized(lock) {
+                FileWriter(pathName, true).use {
+                    it.write("[${Date()}]. $text. Status: $status \n")
+                }
+            }
+        } catch (_: Exception) {
         }
     }
 }

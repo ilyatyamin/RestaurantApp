@@ -1,4 +1,4 @@
-package restaurant
+package restaurant.order
 
 enum class ImportanceLevel {
     Low,
