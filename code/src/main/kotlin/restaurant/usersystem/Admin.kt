@@ -1,29 +1,72 @@
 package restaurant.usersystem
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import restaurant.dish.DishParams
 import restaurant.order.OrderSystem
-import java.time.Duration
+import kotlin.time.Duration
 
-class Admin(id: Int, login: String, password: String, orderSystem: OrderSystem) :
-    User(id, login, password, UserRole.Admin, orderSystem) {
-    fun addDishToMenu(name : String, price : Int, timeProduction : Duration, count: Int = 1) : Int {
-        return orderSystem.menuObj.addDishToMenu(name, price, timeProduction, count)
+@Serializable
+class Admin(
+    val id: Int,
+    private val login: String,
+    private val password: String
+) : User() {
+    init {
+        setRole(UserRole.Admin)
+    }
+
+    override fun compareData(log: String, passw: String): Boolean {
+        return login == log && password == passw
+    }
+
+    fun addDishToMenu(name: String, price: Int, timeProduction: Duration, count: Int = 1): Int {
+        if (isLoggedNow) {
+            return orderSystem.menuObj.addDishToMenu(name, price, timeProduction, count)
+        } else {
+            throw SecurityException("You are not logged now")
+        }
     }
 
     fun removeDishFromMenu(dishId: Int) {
-        orderSystem.menuObj.removeDishFromMenu(dishId)
+        if (isLoggedNow) {
+            orderSystem.menuObj.removeDishFromMenu(dishId)
+        } else {
+            throw SecurityException("You are not logged now")
+        }
     }
 
     fun setParamToDish(dishId: Int, params: DishParams, type: Any) {
-        orderSystem.menuObj.setParamToDish(dishId, params, type)
+        if (isLoggedNow) {
+            orderSystem.menuObj.setParamToDish(dishId, params, type)
+        } else {
+            throw SecurityException("You are not logged now")
+        }
     }
 
-    fun increaseTheNumberOfDish(dishId : Int, delta : Int) {
-        orderSystem.increaseTheNumber(dishId, delta)
+    fun increaseTheNumberOfDish(dishId: Int, delta: Int) {
+        if (isLoggedNow) {
+            orderSystem.increaseTheNumber(dishId, delta)
+        } else {
+            throw SecurityException("You are not logged now")
+        }
     }
 
-    fun getStatistics() {
+    fun getStatistics(): String {
+        return if (isLoggedNow) {
+            orderSystem.getStatistics()
+        } else {
+            orderSystem.getStatistics()
+        }
+    }
 
+    fun getCurrentDishes(): List<Int> {
+        return orderSystem.menuObj.getCurrentDishesId
+    }
+
+    fun getMenu(): String {
+        return orderSystem.menuObj.getString()
     }
 
 }

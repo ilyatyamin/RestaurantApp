@@ -1,12 +1,29 @@
 package restaurant.usersystem
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import restaurant.order.OrderSystem
 
-open class User(val id : Int, private val login: String, private val password: String,
-                private var role: UserRole, protected val orderSystem: OrderSystem) {
-    fun compareData(log: String, passw: String): Boolean {
-        return login == log && password == passw
+@Serializable
+sealed class User {
+    abstract fun compareData(log: String, passw: String): Boolean
+    @Serializable
+    var isLoggedNow: Boolean = false
+    @Serializable
+    var role = UserRole.Visitor
+
+    @Transient
+    protected lateinit var orderSystem: OrderSystem
+
+    @JvmName("set role")
+    protected fun setRole(newRole: UserRole) {
+        role = newRole
     }
 
-    var isLoggedNow: Boolean = false
+    internal fun setOS(order : OrderSystem) : User {
+        orderSystem = order
+        return this
+    }
+
 }

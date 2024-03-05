@@ -1,16 +1,23 @@
 package restaurant
 
 import java.io.FileWriter
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.*
 
-object Logger {
+internal object Logger {
     enum class Status {
         OK,
-        ERROR,
-        NEUTRAL
+        ERROR
     }
 
-    private var pathName = "logs.log"
+    init {
+        if (!Files.exists(Paths.get("./data"))) {
+            Files.createDirectory(Paths.get("./data"))
+        }
+    }
+
+    private var pathName = "data/logs.log"
     private var lock = Any()
 
     fun changePathName(path: String) {

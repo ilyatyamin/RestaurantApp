@@ -1,13 +1,74 @@
 package sd.plugins
 
+import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.plugins.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
+import restaurant.usersystem.UserRole
 
-fun Application.configureRouting() {
+
+@Serializable
+private data class UserData(val login: String, val password: String)
+
+
+fun Application.configureRoutingAuthSystem() {
     routing {
+
+        post("/loginVisitor") {
+            try {
+                val data = call.receive<UserData>()
+                val visitor = SystemGetter.system.tryAuthVisitor(data.login, data.password)
+                val token = TokenSystem.createToken(visitor.id.toString(), visitor)
+                call.respond(HttpStatusCode.OK, token)
+            } catch (ex : BadRequestException) {
+                call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+            } catch (ex : Exception) {
+                call.respond(HttpStatusCode.BadRequest, ex.message.toString())
+            }
+        }
+
+        post("/loginAdmin") {
+            try {
+                val data = call.receive<UserData>()
+                val admin = SystemGetter.system.tryAuthAdmin(data.login, data.password)
+                val token = TokenSystem.createToken(admin.id.toString(), admin)
+                call.respond(HttpStatusCode.OK, token)
+            } catch (ex : BadRequestException) {
+                call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+            } catch (ex : Exception) {
+                call.respond(HttpStatusCode.BadRequest, ex.message.toString())
+            }
+        }
+
+        post("/registerNewVisitor") {
+            try {
+                val data = call.receive<UserData>()
+                val result = SystemGetter.system.registerNewUser(data.login, data.password, UserRole.Visitor)
+                call.respond(HttpStatusCode.OK, result.toString())
+            } catch (ex : BadRequestException) {
+                call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+            } catch (ex : Exception) {
+                call.respond(HttpStatusCode.BadRequest, ex.message.toString())
+            }
+        }
+
+        post("/registerNewAdmin") {
+            try {
+                val data = call.receive<UserData>()
+                val result = SystemGetter.system.registerNewUser(data.login, data.password, UserRole.Admin)
+                call.respond(HttpStatusCode.OK, result.toString())
+            } catch (ex : BadRequestException) {
+                call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+            } catch (ex : Exception) {
+                call.respond(HttpStatusCode.BadRequest, ex.message.toString())
+            }
+        }
+
         get("/") {
-            call.respondText("Hello World!")
+            call.respond(HttpStatusCode.OK, "Welcome to our Restaurant! Please authorize")
         }
     }
 }

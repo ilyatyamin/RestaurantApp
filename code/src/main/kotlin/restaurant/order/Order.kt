@@ -1,38 +1,44 @@
 package restaurant.order
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.encodeToString
 import restaurant.Logger
+import restaurant.Serializer
 import restaurant.dish.Dish
-import restaurant.dish.Menu
 
+@Serializable
 class Order(
-    private var list : MutableMap<Dish, Int>,
+    private var list: MutableMap<Dish, Int>,
     internal var level: ImportanceLevel,
-    private var menu: Menu,
-    private var userId : Int,
-    var orderId : Int
+    internal var userId: Int,
+    var orderId: Int
 ) {
+    @Serializable
     private var status = OrderStatus.New
-    private lateinit var associatedThread : Thread
-    private lateinit var review : Review
-
-    init {
-        acceptOrder()
-        startOrder()
-    }
+    @Transient
+    private lateinit var associatedThread: Thread
+    @Serializable
+    private var review: Review = Review()
 
     fun addDish(newDish: Dish, amount: Int = 1) {
         if (status == OrderStatus.Accepted) {
             if (list[newDish] != null) {
-                Logger.writeToLogResult("Trying to add dish to order $orderId: ${newDish.name}", Logger.Status.OK)
+                Logger.writeToLogResult(
+                    "Trying to add dish to order $orderId for user #${userId} : ${newDish.name}",
+                    Logger.Status.OK
+                )
                 list[newDish] = list[newDish]!! + amount
             }
         } else {
-            Logger.writeToLogResult("Trying to add dish to order $orderId: ${newDish.name}. It's not accepted!", Logger.Status.ERROR)
+            Logger.writeToLogResult(
+                "Trying to add dish to order $orderId for user #${userId}: ${newDish.name}. It's not accepted!",
+                Logger.Status.ERROR
+            )
         }
     }
 
-    fun acceptOrder() : Boolean {
-        val result = menu.acceptOrder(list)
+    fun acceptOrder(result: Boolean): Boolean {
         return if (!result) {
             status = OrderStatus.Canceled
             false
@@ -42,27 +48,32 @@ class Order(
         }
     }
 
-    private fun getMaxTime() : Long {
-        return list.keys.maxBy { it.timeProduction }.timeProduction.seconds
+    fun getMaxTime(): Long {
+        return list.keys.maxBy { it.timeProduction }.timeProduction.inWholeSeconds
     }
 
-    private fun startOrder() {
+
+    fun startOrder() {
         if (status == OrderStatus.Accepted) {
             associatedThread = Thread {
+                OrderSystem.numberOfThreads.incrementAndGet()
                 try {
                     Logger.writeToLog("Start cooking order $orderId...")
                     status = OrderStatus.Cooking
                     Thread.sleep(getMaxTime() * 1000)
-                    Logger.writeToLogResult("Order $orderId is ready!", Logger.Status.OK)
+                    Logger.writeToLogResult("Order $orderId for user #${userId} is ready!", Logger.Status.OK)
                     status = OrderStatus.Ready
-                } catch (_ : Exception) {
-                    Logger.writeToLogResult("Cancel the order $orderId.", Logger.Status.OK)
+                    Serializer.write(Serializer.json.encodeToString(OrderSystem.allOrders), Serializer.allOrdersFile)
+                } catch (_: Exception) {
+                    Logger.writeToLogResult("Cancel the order $orderId for user #${userId}.", Logger.Status.OK)
                     status = OrderStatus.Canceled
                 }
+                OrderSystem.numberOfThreads.decrementAndGet()
+                OrderSystem.getOrderFromQueue()
             }
             associatedThread.start()
         } else {
-            Logger.writeToLogResult("Order $orderId is not accepted!", Logger.Status.ERROR)
+            Logger.writeToLogResult("Order $orderId for user #${userId} is not accepted!", Logger.Status.ERROR)
         }
     }
 
@@ -73,7 +84,7 @@ class Order(
             } else {
                 Logger.writeToLogResult("Order $orderId is not cooking!", Logger.Status.ERROR)
             }
-        } catch (_ : Exception) {
+        } catch (_: Exception) {
 
         }
     }
@@ -85,21 +96,37 @@ class Order(
                 sum += dish.price
             }
 
-            Logger.writeToLogResult("Order $orderId for sum = $sum has paid.", Logger.Status.OK)
+            Logger.writeToLogResult("Order $orderId for user #${userId} for sum = $sum has paid.", Logger.Status.OK)
             status = OrderStatus.Payed
         } else {
             Logger.writeToLogResult("You cannot pay the order $orderId now, now order is $status", Logger.Status.ERROR)
         }
     }
 
-    fun getStatus() : OrderStatus {
+    fun getStatus(): OrderStatus {
         return status
     }
 
-    fun setReview(stars : Int, comment : String) {
+    fun setReview(stars: Int, comment: String) {
         if (status == OrderStatus.Payed || status == OrderStatus.Ready) {
-            Logger.writeToLog("Visitor left the review with $stars stars for the order $orderId")
+            Logger.writeToLog("Visitor $userId left the review with $stars stars for the order $orderId")
             review = Review(stars, comment)
         }
     }
+
+    internal val getNumberOfDishes
+        get() = list.size
+
+    internal val getMarkIfItExists: Int?
+        get() {
+            if (review.isInitialized) {
+                return review.stars
+            }
+            return null
+        }
+
+    internal val getMostPopularDish: Pair<String?, Int?>
+        get() {
+            return Pair(list.maxByOrNull { it.value }?.key?.name, list.maxByOrNull { it.value }?.value)
+        }
 }
