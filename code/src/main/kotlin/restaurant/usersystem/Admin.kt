@@ -1,10 +1,7 @@
 package restaurant.usersystem
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import restaurant.dish.DishParams
-import restaurant.order.OrderSystem
 import kotlin.time.Duration
 
 @Serializable

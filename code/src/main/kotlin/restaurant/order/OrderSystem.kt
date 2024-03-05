@@ -1,6 +1,5 @@
 package restaurant.order
 
-import kotlinx.serialization.Transient
 import kotlinx.serialization.encodeToString
 import restaurant.Logger
 import restaurant.Serializer

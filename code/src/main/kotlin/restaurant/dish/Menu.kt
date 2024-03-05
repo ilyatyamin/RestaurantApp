@@ -64,7 +64,7 @@ class Menu(@Serializable private var dishList: MutableMap<Dish, Int> = mutableMa
     fun addDishToMenu(name: String, price: Int, timeProduction: Duration, amount: Int): Int {
         val id = getDishId
 
-        if (dishList.keys.none { it.name == name }) {
+        return if (dishList.keys.none { it.name == name }) {
             val dish = Dish(id, name, price, timeProduction)
             dishList[dish] = amount
             serialize()
@@ -72,12 +72,12 @@ class Menu(@Serializable private var dishList: MutableMap<Dish, Int> = mutableMa
                 "New dish with NAME=${dish.name} and AMOUNT=$amount added to menu",
                 Logger.Status.OK
             )
-            return id
+            id
         } else {
             --dishIdGetter
             serialize()
             Logger.writeToLogResult("Dish with this name ($name) already exists.", Logger.Status.ERROR)
-            return dishList.keys.firstOrNull { it.name == name }!!.dishId
+            dishList.keys.firstOrNull { it.name == name }!!.dishId
         }
     }
 

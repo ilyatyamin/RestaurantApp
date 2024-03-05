@@ -1,6 +1,5 @@
 package restaurant.usersystem
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import restaurant.order.OrderSystem

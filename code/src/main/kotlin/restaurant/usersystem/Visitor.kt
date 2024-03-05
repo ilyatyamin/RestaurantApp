@@ -1,11 +1,8 @@
 package restaurant.usersystem
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import restaurant.order.ImportanceLevel
 import restaurant.order.OrderStatus
-import restaurant.order.OrderSystem
 
 @Serializable
 class Visitor(
@@ -85,7 +82,7 @@ class Visitor(
         }
     }
 
-    fun getOrderStatus(orderId: Int): OrderStatus? {
+    fun getOrderStatus(orderId: Int): OrderStatus {
         if (isLoggedNow) {
             return orderSystem.getOrderStatus(orderId)
         } else {
