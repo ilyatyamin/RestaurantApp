@@ -7,6 +7,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import restaurant.usersystem.UserRole
 
 
@@ -19,7 +20,8 @@ fun Application.configureRoutingAuthSystem() {
 
         post("/loginVisitor") {
             try {
-                val data = call.receive<UserData>()
+                val rawData = call.receive<String>()
+                val data = Json.decodeFromString<UserData>(rawData)
                 val visitor = SystemGetter.system.tryAuthVisitor(data.login, data.password)
                 val token = TokenSystem.createToken(visitor.id.toString(), visitor)
                 call.respond(HttpStatusCode.OK, token)
@@ -32,7 +34,8 @@ fun Application.configureRoutingAuthSystem() {
 
         post("/loginAdmin") {
             try {
-                val data = call.receive<UserData>()
+                val rawData = call.receive<String>()
+                val data = Json.decodeFromString<UserData>(rawData)
                 val admin = SystemGetter.system.tryAuthAdmin(data.login, data.password)
                 val token = TokenSystem.createToken(admin.id.toString(), admin)
                 call.respond(HttpStatusCode.OK, token)
@@ -45,7 +48,8 @@ fun Application.configureRoutingAuthSystem() {
 
         post("/registerNewVisitor") {
             try {
-                val data = call.receive<UserData>()
+                val rawData = call.receive<String>()
+                val data = Json.decodeFromString<UserData>(rawData)
                 val result = SystemGetter.system.registerNewUser(data.login, data.password, UserRole.Visitor)
                 call.respond(HttpStatusCode.OK, result.toString())
             } catch (ex : BadRequestException) {
@@ -57,7 +61,8 @@ fun Application.configureRoutingAuthSystem() {
 
         post("/registerNewAdmin") {
             try {
-                val data = call.receive<UserData>()
+                val rawData = call.receive<String>()
+                val data = Json.decodeFromString<UserData>(rawData)
                 val result = SystemGetter.system.registerNewUser(data.login, data.password, UserRole.Admin)
                 call.respond(HttpStatusCode.OK, result.toString())
             } catch (ex : BadRequestException) {
@@ -66,6 +71,7 @@ fun Application.configureRoutingAuthSystem() {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
         }
+
 
         get("/") {
             call.respond(HttpStatusCode.OK, "Welcome to our Restaurant! Please authorize")

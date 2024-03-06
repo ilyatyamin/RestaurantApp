@@ -12,12 +12,14 @@ class Order(
     private var list: MutableMap<Dish, Int>,
     internal var level: ImportanceLevel,
     internal var userId: Int,
-    var orderId: Int
+    var orderId: Int,
 ) {
     @Serializable
     private var status = OrderStatus.New
+
     @Transient
     private lateinit var associatedThread: Thread
+
     @Serializable
     private var review: Review = Review()
 
@@ -78,14 +80,11 @@ class Order(
     }
 
     fun cancelOrder() {
-        try {
-            if (status == OrderStatus.Cooking) {
-                associatedThread.interrupt()
-            } else {
-                Logger.writeToLogResult("Order $orderId is not cooking!", Logger.Status.ERROR)
-            }
-        } catch (_: Exception) {
-
+        if (status == OrderStatus.Cooking) {
+            associatedThread.interrupt()
+        } else {
+            Logger.writeToLogResult("Order $orderId is not cooking!", Logger.Status.ERROR)
+            throw SecurityException("Order $orderId is not cooking!")
         }
     }
 
@@ -100,6 +99,7 @@ class Order(
             status = OrderStatus.Payed
         } else {
             Logger.writeToLogResult("You cannot pay the order $orderId now, now order is $status", Logger.Status.ERROR)
+            throw SecurityException("You cannot pay the order $orderId now, now order is $status")
         }
     }
 
@@ -111,6 +111,8 @@ class Order(
         if (status == OrderStatus.Payed || status == OrderStatus.Ready) {
             Logger.writeToLog("Visitor $userId left the review with $stars stars for the order $orderId")
             review = Review(stars, comment)
+        } else {
+            throw SecurityException("You cannot set the review on the order now.")
         }
     }
 

@@ -45,38 +45,25 @@ class Visitor(
         }
     }
 
-    @JvmName("MakeOrderByString")
-    fun makeOrder(listOfOrder: MutableMap<String, Int>): Int {
-        if (isLoggedNow) {
-            return orderSystem.addOrder(listOfOrder, matchStatusWithLevel(), id)
-        } else {
-            throw SecurityException("You are not logged now")
-        }
-    }
-
-    fun getCurrentDishes() : List<Int> {
-        return orderSystem.menuObj.getCurrentDishesId
-    }
-
     fun addToOrder(orderId: Int, dishId: Int) {
         if (isLoggedNow) {
-            orderSystem.addToExistedOrder(orderId, dishId)
+            orderSystem.addToExistedOrder(orderId, dishId, id)
         } else {
             throw SecurityException("You are not logged now")
         }
     }
 
-    fun addToOrder(orderId: Int, dishes: MutableList<Int>) {
+    fun addToOrder(orderId: Int, dishes: MutableMap<Int, Int>) {
         if (isLoggedNow) {
-            orderSystem.addToExistedOrder(orderId, dishes)
+            orderSystem.addToExistedOrder(orderId, dishes, id)
         } else {
             throw SecurityException("You are not logged now")
         }
     }
 
-    fun cancelOrder(orderId: Int) {
+    fun cancelOrder(orderId: Int)  {
         if (isLoggedNow) {
-            orderSystem.cancelOrder(orderId)
+            orderSystem.cancelOrder(orderId, id)
         } else {
             throw SecurityException("You are not logged now")
         }
@@ -84,7 +71,7 @@ class Visitor(
 
     fun getOrderStatus(orderId: Int): OrderStatus {
         if (isLoggedNow) {
-            return orderSystem.getOrderStatus(orderId)
+            return orderSystem.getOrderStatus(orderId, id)
         } else {
             throw SecurityException("You are not logged now")
         }
@@ -92,7 +79,7 @@ class Visitor(
 
     fun payOrder(orderId: Int) {
         if (isLoggedNow) {
-            orderSystem.payOrder(orderId)
+            orderSystem.payOrder(orderId, id)
             increaseLevel()
         } else {
             throw SecurityException("You are not logged now")
@@ -110,14 +97,10 @@ class Visitor(
 
     fun leaveFeedbackAboutOrder(orderId: Int, stars: Int, comment: String) {
         if (isLoggedNow) {
-            orderSystem.setReviewToOrder(orderId, stars, comment)
+            orderSystem.setReviewToOrder(orderId, stars, comment, id)
         } else {
             throw SecurityException("You are not logged now")
         }
-    }
-
-    fun getMenu(): String {
-        return orderSystem.menuObj.getString()
     }
 
 }

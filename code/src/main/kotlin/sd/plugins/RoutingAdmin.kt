@@ -6,7 +6,6 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import restaurant.dish.DishParams
@@ -28,14 +27,14 @@ private data class AddDishData(
 private data class RemoveDishData(val token: String, val id: String)
 
 @Serializable
-private data class SetParamData(val token: String, val dishId: Int, val params: DishParams, @Contextual val type: String)
+private data class SetParamData(val token: String, val dishId: String, val params: DishParams, val type: String)
 
 @Serializable
 private data class AddNumberToDishData(val token: String, val dishId: String, val delta: Int)
 
 fun Application.configureRoutingAdminSystem() {
     routing {
-        post("/addDishToMenu") {
+        post("/admin/addDishToMenu") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<AddDishData>(rawData)
@@ -49,7 +48,7 @@ fun Application.configureRoutingAdminSystem() {
             }
         }
 
-        post("/removeDishFromMenu") {
+        post("/admin/removeDishFromMenu") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<RemoveDishData>(rawData)
@@ -63,12 +62,12 @@ fun Application.configureRoutingAdminSystem() {
             }
         }
 
-        post("/setParamToDish") {
+        post("/admin/setParamToDish") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<SetParamData>(rawData)
                 val admin = TokenSystem.getAdminByToken(data.token)
-                admin.setParamToDish(data.dishId, data.params, data.type)
+                admin.setParamToDish(data.dishId.toInt(), data.params, data.type)
                 call.respond(HttpStatusCode.OK, "OK")
             } catch (ex: BadRequestException) {
                 call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
@@ -77,7 +76,7 @@ fun Application.configureRoutingAdminSystem() {
             }
         }
 
-        post("/increaseTheNumberOfDish") {
+        post("/admin/increaseTheNumberOfDish") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<AddNumberToDishData>(rawData)
@@ -91,7 +90,7 @@ fun Application.configureRoutingAdminSystem() {
             }
         }
 
-        get("/getStatistics") {
+        post("/admin/getStatistics") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<JustToken>(rawData)
@@ -104,17 +103,19 @@ fun Application.configureRoutingAdminSystem() {
             }
         }
 
-        get("/getCurrentDishesForAdmin") {
+        post("/admin/exit") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<JustToken>(rawData)
                 val admin = TokenSystem.getAdminByToken(data.token)
-                call.respond(HttpStatusCode.OK, admin.getCurrentDishes().toString())
+                SystemGetter.system.exitUser(admin)
+                call.respond(HttpStatusCode.OK)
             } catch (ex: BadRequestException) {
                 call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
         }
+
     }
 }

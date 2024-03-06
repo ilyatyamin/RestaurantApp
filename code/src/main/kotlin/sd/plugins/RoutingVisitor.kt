@@ -16,7 +16,7 @@ private data class MakeOrderData(val token: String, val listOfOrder: MutableMap<
 private data class AddToOrderData(val token: String, val orderId: Int, val dishId: Int)
 
 @Serializable
-private data class AddToOrderManyDishData(val token: String, val orderId: Int, val dishes: MutableList<Int>)
+private data class AddToOrderManyDishData(val token: String, val orderId: Int, val dishes: MutableMap<Int, Int>)
 
 @Serializable
 private data class JustOrderData(val token: String, val orderId: Int)
@@ -29,7 +29,7 @@ private data class JustTokenData(val token: String)
 
 fun Application.configureRoutingVisitorSystem() {
     routing {
-        post("/makeOrder") {
+        post("/order/makeOrder") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<MakeOrderData>(rawData)
@@ -43,7 +43,7 @@ fun Application.configureRoutingVisitorSystem() {
             }
         }
 
-        post("/addToOrderOneDish") {
+        post("/order/addToOrderOneDish") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<AddToOrderData>(rawData)
@@ -57,7 +57,7 @@ fun Application.configureRoutingVisitorSystem() {
             }
         }
 
-        post("/addToOrderManyDish") {
+        post("/order/addToOrderManyDish") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<AddToOrderManyDishData>(rawData)
@@ -71,7 +71,7 @@ fun Application.configureRoutingVisitorSystem() {
             }
         }
 
-        post("/cancelOrder") {
+        post("/order/cancelOrder") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<JustOrderData>(rawData)
@@ -85,7 +85,7 @@ fun Application.configureRoutingVisitorSystem() {
             }
         }
 
-        get("/getOrderStatus") {
+        post("/order/getOrderStatus") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<JustOrderData>(rawData)
@@ -98,7 +98,7 @@ fun Application.configureRoutingVisitorSystem() {
             }
         }
 
-        post("/payOrder") {
+        post("/order/payOrder") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<JustOrderData>(rawData)
@@ -112,7 +112,7 @@ fun Application.configureRoutingVisitorSystem() {
             }
         }
 
-        post("/leaveFeedbackAboutData") {
+        post("/order/leaveFeedbackAboutData") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<FeedbackOrderData>(rawData)
@@ -126,17 +126,19 @@ fun Application.configureRoutingVisitorSystem() {
             }
         }
 
-        get("/getCurrentDishesInWeb") {
+        post("/visitor/exit") {
             try {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<JustTokenData>(rawData)
                 val visitor = TokenSystem.getVisitorByToken(data.token)
-                call.respond(HttpStatusCode.OK, visitor.getCurrentDishes().toString())
+                SystemGetter.system.exitUser(visitor)
+                call.respond(HttpStatusCode.OK)
             } catch (ex: BadRequestException) {
                 call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
         }
+
     }
 }

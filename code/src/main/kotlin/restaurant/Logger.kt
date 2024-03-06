@@ -20,10 +20,6 @@ internal object Logger {
     private var pathName = "data/logs.log"
     private var lock = Any()
 
-    fun changePathName(path: String) {
-        pathName = path
-    }
-
     fun writeToLog(text: String) {
         try {
             synchronized(lock) {

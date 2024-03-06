@@ -9,7 +9,7 @@ import io.ktor.server.routing.*
 
 fun Application.configureRoutingMenu() {
     routing {
-        post("getMenu") {
+        post("/getMenu") {
             try {
                 call.respond(HttpStatusCode.OK, SystemGetter.system.getMenu())
             } catch (ex: BadRequestException) {

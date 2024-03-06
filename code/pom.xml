@@ -182,6 +182,11 @@
                         <artifactId>kotlin-maven-serialization</artifactId>
                         <version>${kotlin_version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-serialization</artifactId>
+                        <version>${kotlin_version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>

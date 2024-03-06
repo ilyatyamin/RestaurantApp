@@ -57,13 +57,4 @@ class Admin(
             orderSystem.getStatistics()
         }
     }
-
-    fun getCurrentDishes(): List<Int> {
-        return orderSystem.menuObj.getCurrentDishesId
-    }
-
-    fun getMenu(): String {
-        return orderSystem.menuObj.getString()
-    }
-
 }

@@ -42,6 +42,9 @@ class System {
     }
 
     fun registerNewUser(login: String, password: String, role: UserRole): Boolean {
+        if (login.isEmpty() || password.isEmpty()) {
+            throw SecurityException("Data cannot be null")
+        }
         return authSystem.addUserToSystem(login, Encryptor.encryptThis(password), role)
     }
 

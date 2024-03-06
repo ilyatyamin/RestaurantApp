@@ -45,10 +45,10 @@ class AuthorizationSystem(private val system : OrderSystem) {
         if (result != null) {
             result.isLoggedNow = true
             Logger.writeToLog("Attempt for auth with login $login. Result: OK")
+            // serialize()
         } else {
             Logger.writeToLog("Attempt for auth with login $login. Result: ERROR")
         }
-        serialize()
         return result
     }
 
