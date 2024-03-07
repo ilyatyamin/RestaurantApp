@@ -1,5 +1,5 @@
-import Enums.DishParams
-import Enums.Type
+import enums.DishParams
+import enums.Type
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -9,6 +9,10 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
 
+/**
+ * Client class that provides functions of making responses to localhost and getting back HTTPRequests
+ * @constructor Create Client class
+ */
 internal class Client {
     private val client = HttpClient.newBuilder()
         .version(HttpClient.Version.HTTP_2)

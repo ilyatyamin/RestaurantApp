@@ -1,6 +1,10 @@
-import Enums.DishParams
-import Enums.Type
+import enums.DishParams
+import enums.Type
 
+/**
+ * Class that provides functions to communicate with a user, enter any data, check it correctness.
+ * Class uses Client to make responses and get the results back.
+ */
 class ConsoleSystem {
     private val greenColor = "\u001b[32m"
     private val resetColor = "\u001b[0m" // to reset color to the default
@@ -280,6 +284,15 @@ class ConsoleSystem {
         }
     }
 
+    /**
+     * Accept string as parameter,
+     * make an attempt to convert it to int and check that this value lies in needed borders.
+     * @param str string that you need to convert and check
+     * @param leftBorder left border on possible integers
+     * @param rightBorder right border on possible integers
+     * @return int variable of string
+     * @throws IndexOutOfBoundsException if data is incorrect
+     */
     private fun fromStringToCorrectChoice(str: String, leftBorder: Int, rightBorder: Int): Int {
         val intValue = str.toInt()
         if (intValue !in leftBorder..rightBorder && intValue != -1) {
@@ -288,7 +301,11 @@ class ConsoleSystem {
         return intValue
     }
 
-
+    /**
+     * Tries to convert string to int, if method catches an exception, returns 1
+     * @param str needed to conversion string
+     * @return this string in int variable or 1 if conversion creates an exception
+     */
     private fun fromStringToIntWithOne(str: String): Int {
         return try {
             str.toInt()
@@ -297,17 +314,21 @@ class ConsoleSystem {
         }
     }
 
+    /**
+     * Input order list from console, check the user's input for the correctness
+     * @return map, where key is dishId, and value is an amount of the dish
+     */
     private fun inputOrderList(): MutableMap<Int, Int> {
         val order = mutableMapOf<Int, Int>()
         println("Вводите ваш заказ в следующем формате: [ID_БЛЮДА] [КОЛ_ВО]. Окончанием ввода будет служить -1: ")
         var inp = readln()
         while (inp != "-1") {
-            val splitted = inp.split(" ")
-            if (splitted.size != 2) {
+            val splitData = inp.split(" ")
+            if (splitData.size != 2) {
                 throw IndexOutOfBoundsException("You must enter 2 numbers.")
             }
-            val dishId = splitted[0].toInt()
-            val count = splitted[1].toInt()
+            val dishId = splitData[0].toInt()
+            val count = splitData[1].toInt()
 
             order[dishId] = count
             inp = readln()
@@ -315,6 +336,10 @@ class ConsoleSystem {
         return order
     }
 
+    /**
+     * Input account data from console
+     * @return Pair with two strings
+     */
     private fun inputAccountData(): Pair<String, String> {
         print("Введите ваш логин: ")
         val login = readln()
@@ -323,6 +348,10 @@ class ConsoleSystem {
         return Pair(login, password)
     }
 
+    /**
+     * Inner method that makes text green (magic!)
+     * @return green string
+     */
     private fun makeTextGreen(str: String): String {
         return greenColor + str + resetColor
     }
