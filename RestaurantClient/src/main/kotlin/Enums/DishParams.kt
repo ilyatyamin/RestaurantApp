@@ -1,4 +1,4 @@
-package DishParams
+package Enums
 
 enum class DishParams {
     Name,

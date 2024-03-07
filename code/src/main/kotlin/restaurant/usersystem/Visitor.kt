@@ -77,10 +77,10 @@ class Visitor(
         }
     }
 
-    fun payOrder(orderId: Int) {
+    fun payOrder(orderId: Int) : Int {
         if (isLoggedNow) {
-            orderSystem.payOrder(orderId, id)
             increaseLevel()
+            return orderSystem.payOrder(orderId, id)
         } else {
             throw SecurityException("You are not logged now")
         }

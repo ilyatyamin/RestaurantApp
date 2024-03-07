@@ -30,13 +30,18 @@ class Order(
                     "Trying to add dish to order $orderId for user #${userId} : ${newDish.name}",
                     Logger.Status.OK
                 )
-                list[newDish] = list[newDish]!! + amount
+                if (list.containsKey(newDish)) {
+                    list[newDish] = list[newDish]!! + amount
+                } else {
+                    list[newDish] = amount
+                }
             }
         } else {
             Logger.writeToLogResult(
                 "Trying to add dish to order $orderId for user #${userId}: ${newDish.name}. It's not accepted!",
                 Logger.Status.ERROR
             )
+            throw SecurityException("This order is not accepted!")
         }
     }
 
@@ -76,6 +81,7 @@ class Order(
             associatedThread.start()
         } else {
             Logger.writeToLogResult("Order $orderId for user #${userId} is not accepted!", Logger.Status.ERROR)
+            throw SecurityException("Order $orderId for user #${userId} is not accepted!")
         }
     }
 
@@ -88,7 +94,7 @@ class Order(
         }
     }
 
-    fun payOrder() {
+    fun payOrder(): Int {
         if (status == OrderStatus.Ready) {
             var sum = 0
             for (dish in list.keys) {
@@ -97,6 +103,7 @@ class Order(
 
             Logger.writeToLogResult("Order $orderId for user #${userId} for sum = $sum has paid.", Logger.Status.OK)
             status = OrderStatus.Payed
+            return sum
         } else {
             Logger.writeToLogResult("You cannot pay the order $orderId now, now order is $status", Logger.Status.ERROR)
             throw SecurityException("You cannot pay the order $orderId now, now order is $status")
@@ -127,8 +134,4 @@ class Order(
             return null
         }
 
-    internal val getMostPopularDish: Pair<String?, Int?>
-        get() {
-            return Pair(list.maxByOrNull { it.value }?.key?.name, list.maxByOrNull { it.value }?.value)
-        }
 }

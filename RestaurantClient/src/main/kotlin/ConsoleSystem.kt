@@ -1,14 +1,13 @@
-import DishParams.DishParams
+import Enums.DishParams
+import Enums.Type
 
 class ConsoleSystem {
     private val greenColor = "\u001b[32m"
     private val resetColor = "\u001b[0m" // to reset color to the default
     private var client = Client()
 
-    var isLogged = false
-    var userType: Type = Type.None
-
-    enum class Type { Admin, Visitor, None }
+    val userType: Type
+        get() = client.userType
 
     init {
         showRegistrateMenu()
@@ -16,7 +15,7 @@ class ConsoleSystem {
 
     private fun showRegistrateMenu(): String {
         return """
-            ${makeTextGreen("Пожалуйста, зарегистрируйтесь.")}
+            ${makeTextGreen("Пожалуйста, авторизуйтесь.")}
             1. Войти как пользователь.
             2. Войти как администратор.
             3. Зарегистрироваться как пользователь.
@@ -35,8 +34,8 @@ class ConsoleSystem {
                     val rawData = inputAccountData()
                     val status = client.loginUser(rawData.first, rawData.second)
                     if (status == "OK") {
-                        userType = Type.Visitor
-                        isLogged = true
+                        client.userType = Type.Visitor
+                        client.isLogged = true
                     }
                     println("Result: ${makeTextGreen(status)}")
                 }
@@ -45,8 +44,8 @@ class ConsoleSystem {
                     val rawData = inputAccountData()
                     val status = client.loginAdmin(rawData.first, rawData.second)
                     if (status == "OK") {
-                        userType = Type.Admin
-                        isLogged = true
+                        client.userType = Type.Admin
+                        client.isLogged = true
                     }
                     println("Result: ${makeTextGreen(status)}")
                 }
@@ -68,7 +67,7 @@ class ConsoleSystem {
                 }
 
                 -1 -> {
-                    throw InterruptedException()
+                    client.userType = Type.Exit
                 }
             }
         } catch (ex: Exception) {
@@ -100,13 +99,13 @@ class ConsoleSystem {
                     val name = readln()
                     print("Введите стоимость блюда: ")
                     val price = fromStringToCorrectChoice(readln(), 0, Int.MAX_VALUE)
-                    print("Введите длительность готовки. Пожалуйста, соблюдайте cледующий формат: использовать h, m, s. Например, 1h 30m.")
+                    print("Введите длительность готовки. Пожалуйста, соблюдайте cледующий формат: использовать h, m, s. Например, 1h 30m: ")
                     val duration = readln()
-                    print("Введите доступное количество блюда. При некорректном вводе значение равно 1.")
+                    print("Введите доступное количество блюда. При некорректном вводе значение равно 1: ")
                     val count = fromStringToIntWithOne(readln())
 
                     val result = client.addDishToMenu(name, price, duration, count)
-                    println("ID блюда в меню: ${makeTextGreen(result)}")
+                    println("ID блюда в меню или сообщение: ${makeTextGreen(result)}")
                 }
 
                 2 -> { // убрать блюдо из меню по его id
@@ -114,7 +113,7 @@ class ConsoleSystem {
                     val id = fromStringToCorrectChoice(readln(), 0, Int.MAX_VALUE)
 
                     val result = client.removeDishFromMenu(id)
-                    println("Result: ${makeTextGreen(result)}")
+                    println("Результат: ${makeTextGreen(result)}")
                 }
 
                 3 -> { // изменить характеристику блюда по его id
@@ -151,15 +150,15 @@ class ConsoleSystem {
                 4 -> { // увеличить кол-во блюда на delta
                     print("Введите ID блюда: ")
                     val id = fromStringToCorrectChoice(readln(), 0, Int.MAX_VALUE)
-                    print("Введите на сколько пополнить его запас: ")
-                    val delta = fromStringToCorrectChoice(readln(), 0, Int.MAX_VALUE)
+                    print("Введите на сколько пополнить / уменьшить его запас: ")
+                    val delta = fromStringToCorrectChoice(readln(), Int.MIN_VALUE, Int.MAX_VALUE)
 
                     val result = client.increaseTheNumberOfDish(id, delta)
-                    println("Result: ${makeTextGreen(result)}")
+                    println("Результат или сообщение: ${makeTextGreen(result)}")
                 }
 
                 5 -> { // Получить статистику по ресторану.
-                    println("Result: ${client.getStatistics()}")
+                    println("Результат или сообщение:\n${client.getStatistics()}")
                 }
 
                 6 -> { // получить меню ресторана
@@ -167,13 +166,13 @@ class ConsoleSystem {
                 }
 
                 7 -> {
-                    isLogged = false
-                    userType = Type.None
+                    client.isLogged = false
+                    client.userType = Type.None
                     client.exitAdmin()
                 }
 
                 -1 -> {
-                    throw InterruptedException()
+                    client.userType = Type.Exit
                 }
             }
         } catch (ex: Exception) {
@@ -207,21 +206,22 @@ class ConsoleSystem {
                     println("----- Меню -----\n${client.getMenu()}")
                     val list = inputOrderList()
                     val result = client.makeOrder(list)
-                    println("Your order's id: ${makeTextGreen(result)}")
+                    println("ID заказа или сообщение: ${makeTextGreen(result)}")
                 }
 
                 2 -> {
                     // добавить блюдо в существующий заказ
+                    println("----- Меню -----\n${client.getMenu()}")
                     print("Введите ID вашего заказа: ")
                     val orderId = fromStringToCorrectChoice(readln(), 1, Int.MAX_VALUE)
 
                     // Чекер, что заказ еще готовится
-                    if (client.getOrderStatus(orderId) != "Preparing") {
-                        println("Your order is not preparing")
+                    if (client.getOrderStatus(orderId) != "Cooking") {
+                        println("Твой заказ уже не готовится. ")
                     } else {
                         val list = inputOrderList()
                         val result = client.addToOrder(orderId, list)
-                        println("Status: ${makeTextGreen(result)}")
+                        println("Статус или сообщение: ${makeTextGreen(result)}")
                     }
                 }
 
@@ -230,7 +230,7 @@ class ConsoleSystem {
                     print("Введите ID вашего заказа: ")
                     val orderId = fromStringToCorrectChoice(readln(), 1, Int.MAX_VALUE)
                     val result = client.getOrderStatus(orderId)
-                    println("Status: ${makeTextGreen(result)}")
+                    println("Статус или сообщение: ${makeTextGreen(result)}")
                 }
 
                 4 -> {
@@ -238,7 +238,7 @@ class ConsoleSystem {
                     print("Введите ID вашего заказа: ")
                     val orderId = fromStringToCorrectChoice(readln(), 1, Int.MAX_VALUE)
                     val result = client.cancelOrder(orderId)
-                    println("Status: ${makeTextGreen(result)}")
+                    println("Статус или сообщение: ${makeTextGreen(result)}")
                 }
 
                 5 -> {
@@ -246,7 +246,7 @@ class ConsoleSystem {
                     print("Введите ID вашего заказа: ")
                     val orderId = fromStringToCorrectChoice(readln(), 1, Int.MAX_VALUE)
                     val result = client.payOrder(orderId)
-                    println("Status: ${makeTextGreen(result)}")
+                    println("Статус или сообщение: ${makeTextGreen(result)}")
                 }
 
                 6 -> {
@@ -258,7 +258,7 @@ class ConsoleSystem {
                     val comment = readln()
 
                     val result = client.leaveFeedbackAboutOrder(orderId, stars, comment)
-                    println("Status: ${makeTextGreen(result)}")
+                    println("Статус или сообщение: ${makeTextGreen(result)}")
                 }
 
                 7 -> {
@@ -266,13 +266,13 @@ class ConsoleSystem {
                 }
 
                 8 -> {
-                    isLogged = false
-                    userType = Type.None
-                    client.exitAdmin()
+                    client.isLogged = false
+                    client.userType = Type.None
+                    client.exitVisitor()
                 }
 
                 -1 -> {
-                    throw InterruptedException()
+                    client.userType = Type.Exit
                 }
             }
         } catch (ex: Exception) {
@@ -282,7 +282,7 @@ class ConsoleSystem {
 
     private fun fromStringToCorrectChoice(str: String, leftBorder: Int, rightBorder: Int): Int {
         val intValue = str.toInt()
-        if (intValue !in leftBorder..rightBorder || intValue == -1) {
+        if (intValue !in leftBorder..rightBorder && intValue != -1) {
             throw IndexOutOfBoundsException("Неверный ввод.")
         }
         return intValue
@@ -299,7 +299,7 @@ class ConsoleSystem {
 
     private fun inputOrderList(): MutableMap<Int, Int> {
         val order = mutableMapOf<Int, Int>()
-        println("Вводите ваш заказ в следующем формате: [ID_БЛЮДА] [КОЛ_ВО]. Окончанием ввода будет служить -1")
+        println("Вводите ваш заказ в следующем формате: [ID_БЛЮДА] [КОЛ_ВО]. Окончанием ввода будет служить -1: ")
         var inp = readln()
         while (inp != "-1") {
             val splitted = inp.split(" ")

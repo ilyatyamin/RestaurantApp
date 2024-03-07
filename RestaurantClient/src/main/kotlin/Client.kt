@@ -1,4 +1,5 @@
-import DishParams.DishParams
+import Enums.DishParams
+import Enums.Type
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -13,6 +14,8 @@ internal class Client {
         .version(HttpClient.Version.HTTP_2)
         .connectTimeout(Duration.ofSeconds(30)).build()
     private var token: String = ""
+    internal var isLogged = false
+    internal var userType: Type = Type.None
 
     init {
         val result = makeRequest("", TypeOfRequest.GET, "")
@@ -27,6 +30,7 @@ internal class Client {
 
     fun loginUser(login: String, password: String): String {
         val result = makeRequest("loginVisitor", TypeOfRequest.POST, Json.encodeToString(LoginData(login, password)))
+        checkValidToken(result?.statusCode())
         return if (result?.statusCode() == 200) {
             token = result.body()
             "OK"
@@ -37,6 +41,7 @@ internal class Client {
 
     fun loginAdmin(login: String, password: String): String {
         val result = makeRequest("loginAdmin", TypeOfRequest.POST, Json.encodeToString(LoginData(login, password)))
+        checkValidToken(result?.statusCode())
         return if (result?.statusCode() == 200) {
             token = result.body()
             "OK"
@@ -48,6 +53,7 @@ internal class Client {
     fun registerNewAdmin(login: String, password: String): String {
         val result =
             makeRequest("registerNewAdmin", TypeOfRequest.POST, Json.encodeToString(LoginData(login, password)))
+        checkValidToken(result?.statusCode())
         return if (result?.statusCode() == 200) {
             "OK"
         } else {
@@ -58,6 +64,7 @@ internal class Client {
     fun registerNewVisitor(login: String, password: String): String {
         val result =
             makeRequest("registerNewVisitor", TypeOfRequest.POST, Json.encodeToString(LoginData(login, password)))
+        checkValidToken(result?.statusCode())
         return if (result?.statusCode() == 200) {
             "OK"
         } else {
@@ -73,6 +80,7 @@ internal class Client {
                 TypeOfRequest.POST,
                 Json.encodeToString(AddDishData(token, name, price, timeProduction, count))
             )
+        checkValidToken(result?.statusCode())
         return result?.body() ?: "null"
     }
 
@@ -83,6 +91,7 @@ internal class Client {
                 TypeOfRequest.POST,
                 Json.encodeToString(RemoveDishData(token, id.toString()))
             )
+        checkValidToken(result?.statusCode())
         return result?.body() ?: "null"
     }
 
@@ -93,6 +102,7 @@ internal class Client {
                 TypeOfRequest.POST,
                 Json.encodeToString(SetParamData(token, dishId.toString(), params.toString(), type))
             )
+        checkValidToken(result?.statusCode())
         return result?.body() ?: "null"
     }
 
@@ -103,12 +113,14 @@ internal class Client {
                 TypeOfRequest.POST,
                 Json.encodeToString(AddNumberToDishData(token, dishId.toString(), delta))
             )
+        checkValidToken(result?.statusCode())
         return result?.body() ?: "null"
     }
 
     fun getStatistics(): String {
         val result =
             makeRequest("admin/getStatistics", TypeOfRequest.POST, Json.encodeToString(JustToken(token)))
+        checkValidToken(result?.statusCode())
         return result?.body() ?: "null"
     }
 
@@ -121,6 +133,7 @@ internal class Client {
     fun exitAdmin(): String {
         val result =
             makeRequest("admin/exit", TypeOfRequest.POST, "")
+        checkValidToken(result?.statusCode())
         return result?.body() ?: "OK"
     }
 
@@ -128,6 +141,7 @@ internal class Client {
     fun makeOrder(listOfOrder: MutableMap<Int, Int>): String {
         val result =
             makeRequest("order/makeOrder", TypeOfRequest.POST, Json.encodeToString(MakeOrderData(token, listOfOrder)))
+        checkValidToken(result?.statusCode())
         return result?.body() ?: "null"
     }
 
@@ -138,6 +152,7 @@ internal class Client {
                 TypeOfRequest.POST,
                 Json.encodeToString(AddToOrderData(token, orderId, dishId))
             )
+        checkValidToken(result?.statusCode())
         return result?.body() ?: "null"
     }
 
@@ -148,31 +163,36 @@ internal class Client {
                 TypeOfRequest.POST,
                 Json.encodeToString(AddToOrderManyDishData(token, orderId, dishId))
             )
+        checkValidToken(result?.statusCode())
         if (result?.statusCode() == 200) {
             return "OK"
         }
+
         return result?.body() ?: "null"
     }
 
     fun cancelOrder(orderId: Int): String {
         val result =
             makeRequest("order/cancelOrder", TypeOfRequest.POST, Json.encodeToString(JustOrderData(token, orderId)))
-        if (result?.statusCode() == 200) {
-            return "OK"
+        checkValidToken(result?.statusCode())
+        return if (result?.statusCode() == 200) {
+            "OK"
         } else {
-            return result?.body() ?: "null"
+            result?.body() ?: "null"
         }
     }
 
     fun getOrderStatus(orderId: Int): String {
         val result =
             makeRequest("order/getOrderStatus", TypeOfRequest.POST, Json.encodeToString(JustOrderData(token, orderId)))
+        checkValidToken(result?.statusCode())
         return result?.body() ?: "null"
     }
 
     fun payOrder(orderId: Int): String {
         val result =
             makeRequest("order/payOrder", TypeOfRequest.POST, Json.encodeToString(JustOrderData(token, orderId)))
+        checkValidToken(result?.statusCode())
         return result?.body() ?: "null"
     }
 
@@ -183,12 +203,14 @@ internal class Client {
                 TypeOfRequest.POST,
                 Json.encodeToString(FeedbackOrderData(token, orderId, stars, comment))
             )
+        checkValidToken(result?.statusCode())
         return result?.body() ?: "null"
     }
 
     fun exitVisitor(): String {
         val result =
             makeRequest("visitor/exit", TypeOfRequest.POST, "")
+        checkValidToken(result?.statusCode())
         return result?.body() ?: "OK"
     }
 
@@ -206,6 +228,13 @@ internal class Client {
             result
         } catch (e: Exception) {
             null
+        }
+    }
+
+    private fun checkValidToken(code : Int?) {
+        if (code == 401) {
+            isLogged = false
+            userType = Type.None
         }
     }
 }
@@ -248,6 +277,3 @@ private data class JustOrderData(val token: String, val orderId: Int)
 
 @Serializable
 private data class FeedbackOrderData(val token: String, val orderId: Int, val stars: Int, val comment: String)
-
-@Serializable
-private data class JustTokenData(val token: String)

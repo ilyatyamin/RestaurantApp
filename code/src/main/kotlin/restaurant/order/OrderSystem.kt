@@ -75,6 +75,7 @@ class OrderSystem(private var maxNumberOfOrders: Int = 5) {
 
     fun addToExistedOrder(orderId: Int, dishId: Int, userId: Int, amount: Int = 1) {
         val order = getOrderById(orderId)
+        menuObj.acceptOrder(menuObj.getDishMapFromIds(mutableMapOf(dishId to amount)))
         if (order == null) {
             Logger.writeToLogResult("This order #$orderId doesn't exists.", Logger.Status.ERROR)
             throw SecurityException("This order #$orderId doesn't exists.")
@@ -97,6 +98,7 @@ class OrderSystem(private var maxNumberOfOrders: Int = 5) {
 
     fun addToExistedOrder(orderId: Int, mapOfDishes: MutableMap<Int, Int>, userId: Int) {
         val order = getOrderById(orderId)
+        menuObj.acceptOrder(menuObj.getDishMapFromIds(mapOfDishes))
         if (order == null) {
             Logger.writeToLogResult("This order #$orderId doesn't exists.", Logger.Status.ERROR)
         } else if (order.userId != userId) {
@@ -146,13 +148,14 @@ class OrderSystem(private var maxNumberOfOrders: Int = 5) {
         }
     }
 
-    fun payOrder(orderId: Int, userId: Int) {
+    fun payOrder(orderId: Int, userId: Int) : Int {
         val order = getOrderById(orderId)
+        serialize()
         if (order != null && order.userId != userId) {
             Logger.writeToLogResult("You doesn't have necessary right to see this order.", Logger.Status.ERROR)
             throw SecurityException("You doesn't have necessary right to see this order.")
         } else if (order != null) {
-            order.payOrder()
+            return order.payOrder()
         } else {
             Logger.writeToLogResult(
                 "Try to pay for order. Order #$orderId with this id doesn't exists",
@@ -160,7 +163,6 @@ class OrderSystem(private var maxNumberOfOrders: Int = 5) {
             )
             throw SecurityException("You cannot cancel non-existed order.")
         }
-        serialize()
     }
 
     fun setReviewToOrder(orderId: Int, stars: Int, comment: String, userId: Int) {

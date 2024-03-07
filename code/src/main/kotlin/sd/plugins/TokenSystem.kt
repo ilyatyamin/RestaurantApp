@@ -56,13 +56,13 @@ object TokenSystem {
     internal fun getAdminByToken(token : String) : Admin {
         val status = decodeToken(token)
         if (status.isExpired) {
-            throw SecurityException("Token is expired.")
+            throw IllegalAccessException("Token is expired.")
         }
         if (status.role != "Admin") {
-            throw SecurityException("You are not admin.")
+            throw IllegalAccessException("You are not admin.")
         }
         if (!DEPENDENCIES.containsKey(token)) {
-            throw SecurityException("Your token is not valid.")
+            throw IllegalAccessException("Your token is not valid.")
         }
         return DEPENDENCIES[token] as Admin
     }
@@ -70,13 +70,13 @@ object TokenSystem {
     internal fun getVisitorByToken(token : String) : Visitor {
         val status = decodeToken(token)
         if (status.isExpired) {
-            throw SecurityException("Token is expired.")
+            throw IllegalAccessException("Token is expired.")
         }
         if (status.role != "Visitor") {
-            throw SecurityException("You are not visitor.")
+            throw IllegalAccessException("You are not visitor.")
         }
         if (!DEPENDENCIES.containsKey(token)) {
-            throw SecurityException("Your token is not valid.")
+            throw IllegalAccessException("Your token is not valid.")
         }
         return DEPENDENCIES[token] as Visitor
     }

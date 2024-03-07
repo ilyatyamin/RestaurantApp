@@ -43,6 +43,8 @@ fun Application.configureRoutingAdminSystem() {
                 call.respond(HttpStatusCode.OK, id.toString())
             } catch (ex: BadRequestException) {
                 call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+            } catch (ex : IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
@@ -57,6 +59,8 @@ fun Application.configureRoutingAdminSystem() {
                 call.respond(HttpStatusCode.OK, "OK")
             } catch (ex: BadRequestException) {
                 call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+            } catch (ex : IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
@@ -71,6 +75,8 @@ fun Application.configureRoutingAdminSystem() {
                 call.respond(HttpStatusCode.OK, "OK")
             } catch (ex: BadRequestException) {
                 call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+            } catch (ex : IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
@@ -85,6 +91,8 @@ fun Application.configureRoutingAdminSystem() {
                 call.respond(HttpStatusCode.OK, "OK")
             } catch (ex: BadRequestException) {
                 call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+            } catch (ex : IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
@@ -98,6 +106,8 @@ fun Application.configureRoutingAdminSystem() {
                 call.respond(HttpStatusCode.OK, admin.getStatistics())
             } catch (ex: BadRequestException) {
                 call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+            } catch (ex : IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
@@ -112,6 +122,8 @@ fun Application.configureRoutingAdminSystem() {
                 call.respond(HttpStatusCode.OK)
             } catch (ex: BadRequestException) {
                 call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+            } catch (ex : IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }

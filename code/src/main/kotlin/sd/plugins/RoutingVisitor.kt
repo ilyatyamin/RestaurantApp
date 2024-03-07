@@ -37,7 +37,9 @@ fun Application.configureRoutingVisitorSystem() {
                 val id = visitor.makeOrder(data.listOfOrder)
                 call.respond(HttpStatusCode.OK, id.toString())
             } catch (ex: BadRequestException) {
-                call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+                call.respond(HttpStatusCode.BadRequest, "Data of request is incorrect")
+            } catch (ex: IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
@@ -51,7 +53,9 @@ fun Application.configureRoutingVisitorSystem() {
                 val id = visitor.addToOrder(data.orderId, data.dishId)
                 call.respond(HttpStatusCode.OK, id.toString())
             } catch (ex: BadRequestException) {
-                call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+                call.respond(HttpStatusCode.BadRequest, "Data of request is incorrect")
+            } catch (ex: IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
@@ -65,7 +69,9 @@ fun Application.configureRoutingVisitorSystem() {
                 val id = visitor.addToOrder(data.orderId, data.dishes)
                 call.respond(HttpStatusCode.OK, id.toString())
             } catch (ex: BadRequestException) {
-                call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+                call.respond(HttpStatusCode.BadRequest, "Data of request is incorrect")
+            } catch (ex: IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
@@ -79,7 +85,9 @@ fun Application.configureRoutingVisitorSystem() {
                 val id = visitor.cancelOrder(data.orderId)
                 call.respond(HttpStatusCode.OK, id.toString())
             } catch (ex: BadRequestException) {
-                call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+                call.respond(HttpStatusCode.BadRequest, "Data of request is incorrect")
+            } catch (ex: IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
@@ -92,7 +100,9 @@ fun Application.configureRoutingVisitorSystem() {
                 val visitor = TokenSystem.getVisitorByToken(data.token)
                 call.respond(HttpStatusCode.OK, visitor.getOrderStatus(data.orderId).toString())
             } catch (ex: BadRequestException) {
-                call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+                call.respond(HttpStatusCode.BadRequest, "Data of request is incorrect")
+            } catch (ex: IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
@@ -103,10 +113,11 @@ fun Application.configureRoutingVisitorSystem() {
                 val rawData = call.receive<String>()
                 val data = Json.decodeFromString<JustOrderData>(rawData)
                 val visitor = TokenSystem.getVisitorByToken(data.token)
-                visitor.payOrder(data.orderId)
-                call.respond(HttpStatusCode.OK, "OK")
+                call.respond(HttpStatusCode.OK, visitor.payOrder(data.orderId))
             } catch (ex: BadRequestException) {
-                call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+                call.respond(HttpStatusCode.BadRequest, "Data of request is incorrect")
+            } catch (ex: IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
@@ -120,7 +131,9 @@ fun Application.configureRoutingVisitorSystem() {
                 visitor.leaveFeedbackAboutOrder(data.orderId, data.stars, data.comment)
                 call.respond(HttpStatusCode.OK, "OK")
             } catch (ex: BadRequestException) {
-                call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+                call.respond(HttpStatusCode.BadRequest, "Data of request is incorrect")
+            } catch (ex: IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
@@ -134,7 +147,9 @@ fun Application.configureRoutingVisitorSystem() {
                 SystemGetter.system.exitUser(visitor)
                 call.respond(HttpStatusCode.OK)
             } catch (ex: BadRequestException) {
-                call.respond(HttpStatusCode.BadRequest,"Data of request is incorrect")
+                call.respond(HttpStatusCode.BadRequest, "Data of request is incorrect")
+            } catch (ex: IllegalAccessException) {
+                call.respond(HttpStatusCode.Unauthorized, ex.message.toString())
             } catch (ex: Exception) {
                 call.respond(HttpStatusCode.BadRequest, ex.message.toString())
             }
