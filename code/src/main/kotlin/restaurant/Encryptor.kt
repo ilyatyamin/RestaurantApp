@@ -5,12 +5,14 @@ import javax.crypto.spec.SecretKeySpec
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
-/** Объект, позволяющий шифровать сообщения и расшифровывать их */
+/**
+ *  Object that allows to encrypt and decrypt messages
+ */
 internal object Encryptor {
     private var password = "ASDFGHEYVN47CB4F"
 
-    /** Производит шифрование строки согласно протоколу AES
-     * @return зашифрованную строку **/
+    /** Encrypt the input message using AES encrypting protocol
+     * @return encrypted string **/
     @OptIn(ExperimentalEncodingApi::class)
     fun encryptThis(input: String): String {
         // Создаем объект шифра
@@ -25,8 +27,8 @@ internal object Encryptor {
         return Base64.encode(encrypt)
     }
 
-    /** Производит расшифрование строки согласно протоколу AES
-     * @return расшифрованную строку **/
+    /** Decrypt the input message using AES encrypting protocol
+     * @return encrypted string **/
     @OptIn(ExperimentalEncodingApi::class)
     fun decrypt(input: String): String {
         // Создаем объект шифра

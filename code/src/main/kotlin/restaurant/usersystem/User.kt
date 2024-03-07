@@ -6,9 +6,16 @@ import restaurant.order.OrderSystem
 
 @Serializable
 sealed class User {
+
+    /**
+     * Compare data with user's data
+     * @return True if inputted data from this account, False vice versa
+     */
     abstract fun compareData(log: String, passw: String): Boolean
+
     @Serializable
     var isLoggedNow: Boolean = false
+
     @Serializable
     var role = UserRole.Visitor
 
@@ -20,7 +27,7 @@ sealed class User {
         role = newRole
     }
 
-    internal fun setOS(order : OrderSystem) : User {
+    internal fun setOS(order: OrderSystem): User {
         orderSystem = order
         return this
     }

@@ -20,6 +20,11 @@ internal object Logger {
     private var pathName = "data/logs.log"
     private var lock = Any()
 
+    /**
+     * Writes message to the log file.
+     * Be careful, it is used not for status messages, only for comments
+     * @param text string that system should log
+     */
     fun writeToLog(text: String) {
         try {
             synchronized(lock) {
@@ -31,6 +36,11 @@ internal object Logger {
         }
     }
 
+    /**
+     * Writes status message to the log file.
+     * @param text string that system should log
+     * @param status status of the action
+     */
     fun writeToLogResult(text: String, status : Status) {
         try {
             synchronized(lock) {

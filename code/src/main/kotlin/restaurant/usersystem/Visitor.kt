@@ -19,7 +19,10 @@ class Visitor(
         return login == log && password == passw
     }
 
-
+    /**
+     * Match user status with order's priority level
+     * @return ImportanceLevel of order
+     */
     private fun matchStatusWithLevel(): ImportanceLevel {
         return when (visitorStatus) {
             UserStatus.Beginner -> {
@@ -36,15 +39,26 @@ class Visitor(
         }
     }
 
+    /**
+     * Creates order for this user
+     * @param mapOfOrder: map where key is dishId and value is the amount of dish's portions.
+     * @return id of order in system
+     */
     @JvmName("MakeOrderByInt")
-    fun makeOrder(listOfOrder: MutableMap<Int, Int>): Int {
+    fun makeOrder(mapOfOrder: MutableMap<Int, Int>): Int {
         if (isLoggedNow) {
-            return orderSystem.addOrder(listOfOrder, matchStatusWithLevel(), id)
+            return orderSystem.addOrder(mapOfOrder, matchStatusWithLevel(), id)
         } else {
             throw SecurityException("You are not logged now")
         }
     }
 
+    /**
+     * Add one dish to existed order.
+     *
+     * @param orderId id of order, where system need to add the dish
+     * @param dishId id of dish, which should be added to the order
+     */
     fun addToOrder(orderId: Int, dishId: Int) {
         if (isLoggedNow) {
             orderSystem.addToExistedOrder(orderId, dishId, id)
@@ -53,6 +67,12 @@ class Visitor(
         }
     }
 
+    /**
+     * Add many dishes to existed order.
+     *
+     * @param orderId id of order, where system need to add the dishes
+     * @param dishes map of dishes, where key is dishId and value is amount
+     */
     fun addToOrder(orderId: Int, dishes: MutableMap<Int, Int>) {
         if (isLoggedNow) {
             orderSystem.addToExistedOrder(orderId, dishes, id)
@@ -61,6 +81,11 @@ class Visitor(
         }
     }
 
+    /**
+     * Cancel the existed order
+     *
+     * @param orderId: id of order that should be cancelled
+     */
     fun cancelOrder(orderId: Int)  {
         if (isLoggedNow) {
             orderSystem.cancelOrder(orderId, id)
@@ -69,6 +94,12 @@ class Visitor(
         }
     }
 
+    /**
+     * Get existed order status
+     *
+     * @param orderId: id of order
+     * @return OrderStatus object
+     */
     fun getOrderStatus(orderId: Int): OrderStatus {
         if (isLoggedNow) {
             return orderSystem.getOrderStatus(orderId, id)
@@ -77,6 +108,12 @@ class Visitor(
         }
     }
 
+    /**
+     * Pay existed order
+     *
+     * @param orderId: id of order
+     * @return current bill for the order
+     */
     fun payOrder(orderId: Int) : Int {
         if (isLoggedNow) {
             increaseLevel()
@@ -86,6 +123,9 @@ class Visitor(
         }
     }
 
+    /**
+     * Increase the customer's level in dependent of the total order's number
+     */
     private fun increaseLevel() {
         ++counterOrders
         if (counterOrders in 11..29) {
@@ -95,6 +135,13 @@ class Visitor(
         }
     }
 
+    /**
+     * Leave feedback about user's order.
+     *
+     * @param orderId: id of order, that should be starred
+     * @param stars the number of stars that user leaved for the order
+     * @param comment the user's comment
+     */
     fun leaveFeedbackAboutOrder(orderId: Int, stars: Int, comment: String) {
         if (isLoggedNow) {
             orderSystem.setReviewToOrder(orderId, stars, comment, id)

@@ -10,6 +10,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import restaurant.usersystem.UserRole
 
+// In this file, there are a lot of data classes.
+// I use it for JSON serialization / deserialization process
 
 @Serializable
 private data class UserData(val login: String, val password: String)

@@ -23,7 +23,13 @@ class Order(
     @Serializable
     private var review: Review = Review()
 
-    fun addDish(newDish: Dish, amount: Int = 1) {
+    /**
+     * Add dish to current existed order
+     *
+     * @param newDish: object of Dish that you need to add to your order
+     * @param amount: the number of portions of dish you need
+     */
+    internal fun addDish(newDish: Dish, amount: Int = 1) {
         if (status == OrderStatus.Accepted) {
             if (list[newDish] != null) {
                 Logger.writeToLogResult(
@@ -45,7 +51,13 @@ class Order(
         }
     }
 
-    fun acceptOrder(result: Boolean): Boolean {
+    /**
+     * Accept order
+     *
+     * @param result
+     * @return: result of accepting
+     */
+    internal fun acceptOrder(result: Boolean): Boolean {
         return if (!result) {
             status = OrderStatus.Canceled
             false
@@ -55,12 +67,21 @@ class Order(
         }
     }
 
-    fun getMaxTime(): Long {
+    /**
+     * Calculates time of order production
+     * @return time of order production
+     */
+    internal fun getMaxTime(): Long {
         return list.keys.maxBy { it.timeProduction }.timeProduction.inWholeSeconds
     }
 
 
-    fun startOrder() {
+    /**
+     * Function of starting order,
+     * creates new thread (it sleeps for getMaxTime() seconds) and managing of queue of orders
+     * @throws SecurityException if order is already cooking
+     */
+    internal fun startOrder() {
         if (status == OrderStatus.Accepted) {
             associatedThread = Thread {
                 OrderSystem.numberOfThreads.incrementAndGet()
@@ -85,6 +106,10 @@ class Order(
         }
     }
 
+    /**
+     * Cancel order, if it is cooking now
+     * @throws SecurityException if order is not cooking now
+     */
     fun cancelOrder() {
         if (status == OrderStatus.Cooking) {
             associatedThread.interrupt()
@@ -94,6 +119,12 @@ class Order(
         }
     }
 
+    /**
+     * Change the status of order to Payed. In real systems,
+     * this method can call other PaymentSystem, but now it just believes that user have enough money in his card
+     * @return the total bill of order
+     * @throws SecurityException if order is now already payed or maybe cooking
+     */
     fun payOrder(): Int {
         if (status == OrderStatus.Ready) {
             var sum = 0
@@ -110,10 +141,18 @@ class Order(
         }
     }
 
+    /**
+     * Get status of order
+     * @return order status
+     */
     fun getStatus(): OrderStatus {
         return status
     }
 
+    /**
+     * Set review to this order
+     * @throws SecurityException: if status of order is not Payed or Ready
+     */
     fun setReview(stars: Int, comment: String) {
         if (status == OrderStatus.Payed || status == OrderStatus.Ready) {
             Logger.writeToLog("Visitor $userId left the review with $stars stars for the order $orderId")

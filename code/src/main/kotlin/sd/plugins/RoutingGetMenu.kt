@@ -6,7 +6,6 @@ import io.ktor.server.plugins.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-
 fun Application.configureRoutingMenu() {
     routing {
         post("/getMenu") {

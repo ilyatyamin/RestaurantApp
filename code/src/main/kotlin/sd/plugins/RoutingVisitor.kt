@@ -9,23 +9,8 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-@Serializable
-private data class MakeOrderData(val token: String, val listOfOrder: MutableMap<Int, Int>)
-
-@Serializable
-private data class AddToOrderData(val token: String, val orderId: Int, val dishId: Int)
-
-@Serializable
-private data class AddToOrderManyDishData(val token: String, val orderId: Int, val dishes: MutableMap<Int, Int>)
-
-@Serializable
-private data class JustOrderData(val token: String, val orderId: Int)
-
-@Serializable
-private data class FeedbackOrderData(val token: String, val orderId: Int, val stars: Int, val comment: String)
-
-@Serializable
-private data class JustTokenData(val token: String)
+// In this file, there are a lot of data classes.
+// I use it for JSON serialization / deserialization process
 
 fun Application.configureRoutingVisitorSystem() {
     routing {
@@ -157,3 +142,22 @@ fun Application.configureRoutingVisitorSystem() {
 
     }
 }
+
+
+@Serializable
+private data class MakeOrderData(val token: String, val listOfOrder: MutableMap<Int, Int>)
+
+@Serializable
+private data class AddToOrderData(val token: String, val orderId: Int, val dishId: Int)
+
+@Serializable
+private data class AddToOrderManyDishData(val token: String, val orderId: Int, val dishes: MutableMap<Int, Int>)
+
+@Serializable
+private data class JustOrderData(val token: String, val orderId: Int)
+
+@Serializable
+private data class FeedbackOrderData(val token: String, val orderId: Int, val stars: Int, val comment: String)
+
+@Serializable
+private data class JustTokenData(val token: String)

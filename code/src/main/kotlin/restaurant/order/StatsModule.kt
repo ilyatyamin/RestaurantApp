@@ -1,5 +1,11 @@
 package restaurant.order
 
+/**
+ * Statistics module for creating statistics.
+ *
+ * @property allOrders: list of all orders existed in the OrderSystem
+ * @constructor Create ready to use StatsModule
+ */
 internal class StatsModule(private val allOrders: MutableList<Order>) {
     private val averageNumberOfDishes: Double
         get() {
@@ -22,6 +28,9 @@ internal class StatsModule(private val allOrders: MutableList<Order>) {
             return list.sum().toDouble() / list.size
         }
 
+    /**
+     * @return string of statistics module
+     */
     fun getStatistics(): String {
         return """
             Statistics:

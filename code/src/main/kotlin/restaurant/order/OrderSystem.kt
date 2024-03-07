@@ -30,6 +30,11 @@ class OrderSystem(private var maxNumberOfOrders: Int = 5) {
         private val isOrdersInitialized
             get() = ::allOrders.isInitialized
 
+        /**
+         * Inner method for multithreading system that get last order from priority queue and start cooking his.
+         * Besides, it is multithreading-safety, because it is possible that many threads will start call this method in one time.
+         * @return object of Order, or null if queue is empty
+         */
         internal fun getOrderFromQueue(): Order? {
             synchronized(locker) {
                 if (waitingOrders.isEmpty()) {
@@ -49,11 +54,22 @@ class OrderSystem(private var maxNumberOfOrders: Int = 5) {
             return orderIdGetter
         }
 
-
+    /**
+     * Inner method: match orderId with Order object
+     * @param id: orderId
+     * @return object of Order, or maybe null if it doesn't exist
+     */
     private fun getOrderById(id: Int): Order? {
         return allOrders.find { it.orderId == id }
     }
 
+    /**
+     * Creates new order.
+     * @param list: map, where key is dishId and value is the amount of needed portions
+     * @param level: Importance level of order. It calculates in dependent of total number of user's orders.
+     * @param userId: id of user, who start this order
+     * @return order ID in orderSystem
+     */
     @JvmName("AddOrderIntToInt")
     fun addOrder(list: MutableMap<Int, Int>, level: ImportanceLevel, userId: Int): Int {
         val idForThisOrder = getOrderId
@@ -73,12 +89,23 @@ class OrderSystem(private var maxNumberOfOrders: Int = 5) {
         return idForThisOrder
     }
 
+    /**
+     * Add another dish (one dish) to existed order with id = orderID. This method also
+     * checks the possibility to add the dish to this order and,
+     * if it's not possible, return this result to user
+     * @param orderId: id of order, where system need to add the dish
+     * @param dishId: id of dish, which should be added to the order
+     * @param userId: id of user, who calls this method
+     * @param amount: how many dish should be added to order
+     * @throws SecurityException: if user try to check the order that created not by himself
+     * @throws SecurityException: if order with this id doesn't exist
+     */
     fun addToExistedOrder(orderId: Int, dishId: Int, userId: Int, amount: Int = 1) {
         val order = getOrderById(orderId)
         menuObj.acceptOrder(menuObj.getDishMapFromIds(mutableMapOf(dishId to amount)))
         if (order == null) {
             Logger.writeToLogResult("This order #$orderId doesn't exists.", Logger.Status.ERROR)
-            throw SecurityException("This order #$orderId doesn't exists.")
+            throw SecurityException("This order #$orderId doesn't exist.")
         } else if (order.userId != userId) {
             Logger.writeToLogResult("You doesn't have necessary right to see this order.", Logger.Status.ERROR)
             throw SecurityException("You doesn't have necessary right to see this order.")
@@ -96,6 +123,15 @@ class OrderSystem(private var maxNumberOfOrders: Int = 5) {
         serialize()
     }
 
+    /**
+     *  Add other dishes (not one dish) to existed order with id = orderID. This method also
+     *  checks the possibility to add the dish to this order and,
+     *  if it's not possible, return this result to user
+     *
+     * @param orderId: id of order, where system need to add dishes
+     * @param mapOfDishes: map of dishes, where key is dishId and value is the amount of dish.
+     * @param userId: id of user, who calls this method
+     */
     fun addToExistedOrder(orderId: Int, mapOfDishes: MutableMap<Int, Int>, userId: Int) {
         val order = getOrderById(orderId)
         menuObj.acceptOrder(menuObj.getDishMapFromIds(mapOfDishes))
@@ -120,6 +156,11 @@ class OrderSystem(private var maxNumberOfOrders: Int = 5) {
         serialize()
     }
 
+    /**
+     * Cancel the existed order.
+     * @param orderId: id of order that is need to be cancelled
+     * @param userId: id of user, who calls this method
+     */
     fun cancelOrder(orderId: Int, userId: Int) {
         val order = getOrderById(orderId)
         if (order == null) {
@@ -134,6 +175,13 @@ class OrderSystem(private var maxNumberOfOrders: Int = 5) {
         serialize()
     }
 
+    /**
+     * Get order status by orderId
+     *
+     * @param orderId: id of order
+     * @param userId: id of user, who calls this method
+     * @return order status
+     */
     fun getOrderStatus(orderId: Int, userId: Int): OrderStatus {
         val order = getOrderById(orderId)
         return if (order == null) {
@@ -148,7 +196,13 @@ class OrderSystem(private var maxNumberOfOrders: Int = 5) {
         }
     }
 
-    fun payOrder(orderId: Int, userId: Int) : Int {
+    /**
+     * Change the status of order to Payed. In real systems,
+     * this method can call other PaymentSystem, but now it just believes that user have enough money in his card
+     * @return the total bill of order
+     * @throws SecurityException if order is now already payed or maybe cooking
+     */
+    fun payOrder(orderId: Int, userId: Int): Int {
         val order = getOrderById(orderId)
         serialize()
         if (order != null && order.userId != userId) {
@@ -165,6 +219,14 @@ class OrderSystem(private var maxNumberOfOrders: Int = 5) {
         }
     }
 
+    /**
+     * Set review to order.
+     *
+     * @param orderId: id of order
+     * @param stars: how many stars visitor put to the order
+     * @param comment: user's comment that he leave to this order
+     * @param userId: id of user, who calls this method
+     */
     fun setReviewToOrder(orderId: Int, stars: Int, comment: String, userId: Int) {
         val order = getOrderById(orderId)
         if (order != null && order.userId != userId) {
@@ -182,11 +244,20 @@ class OrderSystem(private var maxNumberOfOrders: Int = 5) {
         serialize()
     }
 
-    fun increaseTheNumber(orderId: Int, delta: Int) {
-        menuObj.increaseAmountOfDish(orderId, delta)
+    /**
+     * Admin method: increase / decrease the number of dish in restaurant by delta
+     *
+     * @param dishId: id of dish, number of that system should increase / decrease
+     * @param delta: the number of portions of dish you need
+     */
+    fun increaseTheNumber(dishId: Int, delta: Int) {
+        menuObj.increaseAmountOfDish(dishId, delta)
         serialize()
     }
 
+    /**
+     * @return returns statistics of the restaurant for the admin
+     */
     fun getStatistics(): String {
         return statsModule.getStatistics()
     }

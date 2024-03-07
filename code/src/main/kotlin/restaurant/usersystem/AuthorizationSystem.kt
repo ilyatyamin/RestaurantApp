@@ -22,6 +22,15 @@ class AuthorizationSystem(private val system : OrderSystem) {
             return userIncrement
         }
 
+    /**
+     * Register user (admin / visitor, in dependent of role parameter) with login and password
+     *
+     * @param login
+     * @param encryptedPassw it is already in encrypted style
+     * @param role: enum of UserRole (Visitor, Admin)
+     * @return boolean variable: is adding was succesful.
+     * @throws SecurityException if this user already exists in the system
+     */
     fun addUserToSystem(login: String, encryptedPassw: String, role: UserRole): Boolean {
         // If this user already exists...
         val resultOfSearch = users.find { it.compareData(login, encryptedPassw) }
@@ -40,18 +49,27 @@ class AuthorizationSystem(private val system : OrderSystem) {
         return true
     }
 
+    /**
+     * Authentication method
+     *
+     * @param login login of user
+     * @param encryptedPassw password in encrypted style
+     * @return User object if auth is successful or null in other case
+     */
     fun tryAuth(login: String, encryptedPassw: String): User? {
         val result = users.find { it.compareData(login, encryptedPassw) }
         if (result != null) {
             result.isLoggedNow = true
             Logger.writeToLog("Attempt for auth with login $login. Result: OK")
-            // serialize()
         } else {
             Logger.writeToLog("Attempt for auth with login $login. Result: ERROR")
         }
         return result
     }
 
+    /**
+     * Exit from system
+     */
     fun exitFromSystem(user: User?) {
         if (user == null) {
             Logger.writeToLog("Attempt for exit with login NULL. Result: ERROR")
