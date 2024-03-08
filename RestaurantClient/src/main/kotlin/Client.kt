@@ -28,6 +28,10 @@ internal class Client {
         }
     }
 
+    fun exitServer() {
+        client.close()
+    }
+
     enum class TypeOfRequest {
         GET, POST
     }

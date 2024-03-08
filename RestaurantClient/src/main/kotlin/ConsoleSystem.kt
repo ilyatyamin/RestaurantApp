@@ -355,4 +355,11 @@ class ConsoleSystem {
     private fun makeTextGreen(str: String): String {
         return greenColor + str + resetColor
     }
+
+    /**
+     * Close the client output
+     */
+    internal fun final() {
+        client.exitServer()
+    }
 }
